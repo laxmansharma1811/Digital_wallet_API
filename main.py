@@ -14,3 +14,8 @@ app = FastAPI(title="Digital Wallet API")
 app.include_router(auth_controller.router)
 app.include_router(wallet_controller.router)
 app.include_router(transaction_controller.router)
+
+
+@app.get("/", tags=["Root"])
+async def read_root():
+    return {"message": "Welcome to the Digital Wallet API"}

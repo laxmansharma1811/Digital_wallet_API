@@ -54,6 +54,8 @@ def create_transaction(db: Session, user_id: int, transaction: TransactionCreate
     db.refresh(db_transaction)
     return db_transaction
 
+
+
 def get_transaction_history(db: Session, user_id: int):
     # Get user's wallet
     wallet = db.query(Wallet).filter(Wallet.user_id == user_id).first()
