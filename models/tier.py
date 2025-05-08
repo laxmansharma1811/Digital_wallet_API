@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float
 from db.database import Base
-from pydantic import BaseModel
+
 
 # SQLAlchemy Model
 class Tier(Base):

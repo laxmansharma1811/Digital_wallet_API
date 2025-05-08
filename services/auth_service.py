@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from resources.user import UserCreate, UserLogin
-from fastapi import HTTPException, status
 from models.user import User
+from services.tier_service import get_tier_by_name
+from fastapi import HTTPException, status
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,9 +22,16 @@ def create_user(db: Session, user: UserCreate):
             detail="Email already registered"
         )
     
+    # Get tier
+    tier = get_tier_by_name(db, user.tier_name)
+    
     # Create new user
     hashed_password = hash_password(user.password)
-    db_user = User(email=user.email, hashed_password=hashed_password)
+    db_user = User(
+        email=user.email,
+        hashed_password=hashed_password,
+        tier_id=tier.id
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

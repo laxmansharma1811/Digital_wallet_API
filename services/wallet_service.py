@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 from models.wallet import Wallet
 from resources.wallet import WalletCreate, WalletAddFunds
 from models.user import User
+from services.tier_service import get_user_tier
 
 def create_wallet(db: Session, user_id: int, wallet: WalletCreate):
     # Check if user already has a wallet
@@ -13,11 +14,19 @@ def create_wallet(db: Session, user_id: int, wallet: WalletCreate):
             detail="User already has a wallet"
         )
     
+    # Get user's tier
+    tier = get_user_tier(db, user_id)
+    
     # Validate initial balance
     if wallet.initial_balance < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Initial balance cannot be negative"
+        )
+    if wallet.initial_balance > tier.max_balance:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Initial balance exceeds {tier.name} tier limit of {tier.max_balance}"
         )
     
     # Create new wallet
@@ -50,7 +59,18 @@ def add_funds(db: Session, user_id: int, funds: WalletAddFunds):
             detail="Amount must be positive"
         )
     
-    wallet.balance += funds.amount
+    # Get user's tier
+    tier = get_user_tier(db, user_id)
+    
+    # Check if new balance exceeds tier limit
+    new_balance = wallet.balance + funds.amount
+    if new_balance > tier.max_balance:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"New balance would exceed {tier.name} tier limit of {tier.max_balance}"
+        )
+    
+    wallet.balance = new_balance
     db.commit()
     db.refresh(wallet)
     return wallet

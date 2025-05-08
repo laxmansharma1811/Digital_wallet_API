@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from controllers import auth_controller, wallet_controller, transaction_controller
+from controllers import auth_controller, wallet_controller, transaction_controller, tier_controller
 from db.database import engine
 from models import user, wallet
 from db.database import Base
@@ -14,6 +14,7 @@ app = FastAPI(title="Digital Wallet API")
 app.include_router(auth_controller.router)
 app.include_router(wallet_controller.router)
 app.include_router(transaction_controller.router)
+app.include_router(tier_controller.router)
 
 
 @app.get("/", tags=["Root"])
